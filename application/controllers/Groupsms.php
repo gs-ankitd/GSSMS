@@ -1,0 +1,82 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Groupsms extends CI_Controller {
+	 function __construct() 
+    {       
+         parent:: __construct();
+		 $this->load->helper(array('form','url','sendsms'));
+		
+		 // Create an instance of the user model
+       $this->load->model('user_m');  
+       $this->load->model('smsmaster_m');  
+	//	 $this->output->enable_profiler(TRUE);
+    }
+	
+	public function index()
+	{
+		$this->load->view('common/innerheader');
+		$this->load->view('sms/groupsms');
+		$this->load->view('common/footer.php');
+	}
+	
+	public function getgroups()
+	{
+	$session_username= $this->session->userdata('username');
+	$groups=$this->user_m->getgroups($session_username);
+	echo json_encode(array('contacts'=>$groups));
+	}
+	
+	public function sendgroupsms()
+	{
+	$session_username= $this->session->userdata('username');
+	$session_org= $this->session->userdata('organisation');
+	$smslogindata=$this->user_m->get_sms_login($session_org);
+	if (isset($_POST["group"]) && !empty($_POST["group"])) {
+	$group_id = $_POST["group"];
+	$msg=$_POST['message'];
+	$groupusers=$this->user_m->getgroupusers($group_id);
+	
+	foreach($groupusers as $row)
+			{
+		$number=$row['phone'];
+      $userid=$row['userid'];
+      $groupuser=$this->user_m->getusername($userid);
+      
+		$delayuntil=null;
+		//echo $smslogindata->text_username;
+		$status = sendSMS($smslogindata->text_username, $smslogindata->text_password,$smslogindata->gen_key,$smslogindata->sender_id,trim($number),$msg,$delayuntil);
+		ob_get_clean(); 
+       $pos = strpos($status, 'MessageId');
+      
+      									if ($pos === false)
+											{
+											$option1="Failed";
+											$status_msg="Failed";
+											$reason=$status;
+										//	echo "<pre>Messages Sending failed.";
+											$this->session->set_flashdata('success', 'Message sending failed!');
+											}
+											else
+											{
+											$option1='Success';
+											$status_msg="Sent";
+											$reason='Success';
+										//	echo "<pre>Message was Successfully Send ";
+										   $this->session->set_flashdata('success', 'Message send successfully!');
+											}
+											
+      $savedetails=$this->smsmaster_m->insert($smslogindata->text_username, $groupuser,trim($number),$msg,$delayuntil,$status_msg,$reason,$batch=null,$type='Group'); 
+      
+				
+			}
+	
+	
+	}
+	redirect('Groupsms', 'refresh'); 
+	
+	}
+	
+	
+}
+?>

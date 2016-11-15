@@ -1,0 +1,202 @@
+ <div class="animsition">
+    <!-- Login Screen -->
+    <div class="login-wrapper ">
+      <div class="login-container signup">
+        <a href="index.html"><img width="100" height="30" src="<?php echo base_url();  ?>images/smsapp_logo.png" /></a>
+        <form action="<?php echo site_url('login/saveuser')?>" class="registration-form" id="registration-form">
+		<fieldset>
+			<div class="form-group label-floating">
+					<label for="name" class="control-label">Name</label>
+					<input type="text" name="name" id="name" class="form-control" >
+			</div>
+			<div class="form-group label-floating">
+                <label for="registerusername" class="control-label">Username<i class="fa fa-fw fa-check" style="color:green;" id="check"></i><i class="fa fa-times" id="uncheck" style="color:red;"></i></label>
+                <input type="text" name="username" class="form-control" id="registerusername" onblur="return check_username();"><span id="Loading"><img src="<?php echo base_url(); ?>/images/select2-spinner.gif" alt="Ajax Indicator"  /></span>
+            </div>
+		    <div class="form-group label-floating">
+                <label for="registeremail" class="control-label">Email<i class="fa fa-fw fa-check" style="color:green;" id="check1"></i><i class="fa fa-times" id="uncheck1" style="color:red;"></i></label>
+                <input type="email" class="form-control" name="email" id="registeremail"  onblur="return check_email();"  ><span id="Loading1"><img src="<?php echo base_url(); ?>/images/select2-spinner.gif" alt="Ajax Indicator"  /></span>	
+            </div>
+			<div class="form-group label-floating">
+					<label for="password" class="control-label">Password</label>
+					<input type="password" name="password" id="password" class="form-control" >
+			</div>
+			<div class="form-group label-floating">
+					<label for="repassword" class="control-label">Re-Password</label>
+					<input type="password" name="repassword" id="repassword" class="form-control"   >
+			</div>
+             <div class="form-group label-floating">
+					<label for="organisation" class="control-label">Organisation</label>
+					<input type="text" name="organisation" id="organisation" class="form-control"   >
+			</div>
+		    <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="termsandconditions" > I agree to the terms and conditions.
+                </label>
+              </div> 
+              <!--<p class="help-block">Notify me about updates to apps or games that I've downloaded</p>-->
+            </div>     
+		</fieldset>
+		<button type="submit" class="btn btn-primary" style="color:#fff;">Submit</button>
+        </form>
+      <!--  <div class="social-login clearfix">
+          <a class="btn btn-primary pull-left facebook" href="index-2.html"><i class="icon-facebook"></i>Facebook login</a><a class="btn btn-primary pull-right twitter" href="index-2.html"><i class="icon-twitter"></i>Twitter login</a>
+        </div>-->
+        <p class="signup">
+          Already have an account? <a class="animsition-link" href="<?php echo site_url('login')?>">Log in now</a>
+        </p>
+      </div>
+    </div>
+    <!-- End Login Screen -->
+ </div>	
+<script>
+$(function() 
+{
+	$('#Loading').hide(); 
+	$('#Loading1').hide(); 
+	$('#check').hide();
+	$('#uncheck').hide();
+	$('#check1').hide();
+	$('#uncheck1').hide();
+	$('#registration-form').validate({
+		onfocusout: function (element) {
+        $(element).valid();
+    },
+                rules: {
+                    name: {
+                 required : true
+							},
+					username:  {
+                 required : true
+							},
+                    email: {
+                        required: true,
+                        email: true
+                    },
+                    password: {
+                        required: true,
+                        minlength: 8
+                    },
+					repassword: {
+						required:true,
+						equalTo: "#password"
+					},
+					organisation:  {
+						required : true
+					},
+					termsandconditions: {
+						required : true
+							},
+                },
+				
+                messages: {
+                    name: {
+					required : "Please enter your fullname"
+					},
+					username:  {
+					required : "Please enter your username"
+					},
+					organisation: {
+					required : "Please enter your organisation"
+					},
+					termsandconditions: {
+					required : "In order to register, you must agree to our Terms & Conditions"
+					},
+                    password: {
+                        required: "Please provide a password",
+                        minlength: "Password at least have 8 characters.",
+                    },
+					password_again: {
+						equalTo: "#password",
+					},
+                    email: { 
+					required:"Please provide an email",
+					email:"Please enter a valid email address",
+					},
+                },
+                submitHandler: function(form){
+					
+		//event.preventDefault();
+
+		// Get the url that the ajax form data is to be submitted to.
+		 var submit_url = $(form).attr('action');
+          $.ajax({
+                        url: submit_url,
+                        type: 'POST',
+                        data: $(form).serialize(),
+                        success: function(response) {
+                           if (response=='true')
+							{
+					 // Empty the login form content and replace it will a successful login message.
+								$('fieldset').empty().append('<h1>Registration on SMSAPP was successful!</h1><p>Please Login to Access.</p>');
+								
+								// Hide any error message that may be showing.
+								$('#message').hide();
+							}
+							// Else the login credentials were invalid.
+							else
+							{
+								// Show an error message stating the users login credentials were invalid.
+								$('#message').show();
+							}
+                        }            
+                    });
+	}
+	})
+	
+	
+});
+
+
+function check_username(){
+ 
+	var username = $("#registerusername").val();
+	if(username.length > 2){
+		$('#Loading').show();
+		$.post("<?php echo site_url('login/check_username_availablity')?>", {
+			username: $('#registerusername').val(),
+		}, function(response){
+			
+			$('#Loading').hide();
+			/*$('#Info').fadeOut();
+			setTimeout("finishAjax('Info', '"+escape(response)+"')", 450);*/
+			if(response=='0'){
+			$('#check').show();
+			$('#uncheck').hide();
+			}else{
+			$('#uncheck').show(); 
+			$('#check').hide();
+			}
+		});
+		return false;
+	}
+}
+
+function check_email(){
+	var email = $("#registeremail").val();
+	if(email.length > 2){
+		$('#Loading1').show();
+		$.post("<?php echo site_url('login/check_email_availablity')?>", {
+			email: $('#registeremail').val(),
+		}, function(response){
+			
+			$('#Loading1').hide();
+			/*$('#Info').fadeOut();
+			setTimeout("finishAjax('Info', '"+escape(response)+"')", 450);*/
+			if(response=='0'){
+			$('#check1').show();
+			$('#uncheck1').hide();
+			}else{
+			$('#uncheck1').show(); 
+			$('#check1').hide();
+			}
+		});
+		return false;
+	}
+}
+ 
+</script>
+  </body>
+
+</html>
