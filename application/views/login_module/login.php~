@@ -18,7 +18,7 @@
 							<p class="error_msg">Your submitted login details are incorrect.</p>
 			  </div>
 			  <div class="form-group label-floating">
-                <label for="111" class="control-label">Username</label>
+                <label for="111" class="control-label">USERNAME</label>
                 <input type="text" name="username" class="form-control" >
               </div>
                <div class="form-group label-floating">
